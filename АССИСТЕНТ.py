@@ -23,9 +23,10 @@ sr.pause_threshold = 0.5
 # Список комманд
 commands = {
     'find_in_browser': ('загугли', 'найди', 'узнай'),
-    'listen_yandex_music': ('включи музыку', 'вруби музыку', 'врубая музыку'),
-    'telegram': ('запусти telegram', 'открой telegram', 'запусти телегу', 'открой телегу'),
-    'end_the_program': ('выключайся', 'завершая работу', 'завершай работу')
+    'search_video_on_youtube': 'видео',
+    'listen_yandex_music': 'музыка',
+    'telegram': 'telegram',
+    'end_the_program': ('выключайся', 'выключая')
 }
 
 
@@ -44,23 +45,28 @@ def listen_command():
 
 def find_in_browser(find):
     """Функция ищет информацию в интернете"""
-    webbrowser.open_new(f'https://www.google.com/search?q={" ".join(find.split())}')
+    webbrowser.open_new(f'https://www.google.com/search?q={find}')
 
 
-def listen_yandex_music():
+def search_video_on_youtube(find):
+    """Функция ищет видео на ютубе"""
+    webbrowser.open_new(f'https://www.youtube.com/results?search_query={find}')
+
+
+def listen_yandex_music(smthn):
     """Функуия включения Яндекс музыки (иностранный рэп и хип-хоп)"""
     """❗❗ Возможна замена порядка расположения кнопки запуске ❗❗"""
     webbrowser.open_new('https://music.yandex.ru/radio')
-    root.moveTo(505, 555, 3)
+    root.moveTo(505, 555, 3.5)
     root.click()
 
 
-def telegram():
+def telegram(smthn):
     """Функцция запускает телеграм"""
     os.startfile('your path')
 
 
-def end_the_program():
+def end_the_program(smthn):
     """Функуия завершает работу программы"""
     sys.exit()
 
@@ -68,33 +74,16 @@ def end_the_program():
 def main():
     while True:
         query = listen_command()
-        print(query)
+        # print(query)
 
-        command = ''
-        # Если запрос на поиск информации в интернете, то убираем из запроса слова из команды 'open_browser'
-        # Иначе если один из вариантов вызова комманды подходит, то записываем в переменную название команды
-        if query.startswith(commands['find_in_browser']):
-            for_browser = query
-            command = 'find_in_browser'
-            for name_command in commands['find_in_browser']:
-                for_browser = for_browser.replace(name_command, '').strip()
-        else:
-            for name_commands, version_names_commad in commands.items():
-                if query in version_names_commad:
-                    command = name_commands
+        # Разделяем запрос на команду и доп уточнения для команды
+        voice_query = query.split(' ')
+        command = voice_query[0]
+        command_options = ' '.join(voice_query[1::])
 
-        if command != '' and command != 'find_in_browser':
-            # Вызываем функцию по ключу команды, если в ней нет лишних фраз
-            """
-            Было раньше так:
-            if command == 'clear_task':
-                clear_task()
-            Теперь:
-                globals()[command(='clear_task')]() == clear_task()
-            """
-            globals()[command]()
-        elif command == 'find_in_browser':
-            find_in_browser(for_browser)
+        for key in commands.keys():
+            if command in commands.get(key):
+                globals()[key](command_options)
 
 
 if __name__ == '__main__':
