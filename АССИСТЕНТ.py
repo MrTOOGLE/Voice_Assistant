@@ -2,6 +2,7 @@ import sys
 import os
 
 import webbrowser
+import pyperclip
 import pyautogui as root
 from time import sleep
 
@@ -20,13 +21,19 @@ BLUE = '\033[34m'
 sr = speech_recognition.Recognizer()
 # Вермя после которого фраза будет принята
 sr.pause_threshold = 0.5
+
+# Список фраз, которые нужно убрать перед анализом команд
+phrases = {
+    'name': ('name_your_assistant', ),
+    'to_do': ('включи', 'покажи', 'открой')
+}
 # Список комманд
 commands = {
     'find_in_browser': ('загугли', 'найди', 'узнай'),
     'search_video_on_youtube': 'видео',
-    'listen_yandex_music': 'музыка',
-    'telegram': 'telegram',
-    'end_the_program': ('выключайся', 'выключая')
+    'listen_yandex_music': ('музыка', 'музыку'),
+    'telegram': ('telegram', 'телеграм', 'телегу'),
+    'end_the_program': ('выключайся', 'выключая', 'выключись')
 }
 
 
@@ -54,16 +61,23 @@ def search_video_on_youtube(find):
 
 
 def listen_yandex_music(smthn):
-    """Функуия включения Яндекс музыки (иностранный рэп и хип-хоп)"""
-    """❗❗ Возможна замена порядка расположения кнопки запуске ❗❗"""
-    webbrowser.open_new('https://music.yandex.ru/radio')
-    root.moveTo(505, 555, 3.5)
+    """Функуия запуска Яндекс музыки"""
+    webbrowser.open_new('your_path')
+    sleep(2)
+    # Ищем иконку ЯМ на главной странице
+    a = root.locateCenterOnScreen('YM.png', confidence=0.9)
+    root.moveTo(a)
+    root.click()
+    sleep(4)
+    # Ищем 'мою волну' на странице ЯМ
+    a = root.locateCenterOnScreen('My_Wave.png', confidence=0.8)
+    root.moveTo(a)
     root.click()
 
 
 def telegram(smthn):
     """Функцция запускает телеграм"""
-    os.startfile('your path')
+    os.startfile('your_path')
 
 
 def end_the_program(smthn):
@@ -74,10 +88,15 @@ def end_the_program(smthn):
 def main():
     while True:
         query = listen_command()
-        # print(query)
+        print(query)
+
+        # Удаляем слова, не нужные для анализа
+        for phrase in phrases:
+            for word in phrases[phrase]:
+                query = query.replace(word, '').strip()
 
         # Разделяем запрос на команду и доп уточнения для команды
-        voice_query = query.split(' ')
+        voice_query = query.strip().split(' ')
         command = voice_query[0]
         command_options = ' '.join(voice_query[1::])
 
