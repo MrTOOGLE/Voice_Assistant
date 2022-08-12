@@ -1,10 +1,12 @@
 import sys
 import os
+import shutil
 
 import webbrowser
 import pyperclip
 import pyautogui as root
 from time import sleep
+from icrawler.builtin import GoogleImageCrawler
 
 import speech_recognition
 
@@ -24,7 +26,7 @@ sr.pause_threshold = 0.5
 
 # Список фраз, которые нужно убрать перед анализом команд
 phrases = {
-    'name': ('name_your_assistant', ),
+    'name': ('name', ),
     'to_do': ('включи', 'покажи', 'открой')
 }
 # Список комманд
@@ -32,6 +34,7 @@ commands = {
     'find_in_browser': ('загугли', 'найди', 'узнай'),
     'search_video_on_youtube': 'видео',
     'listen_yandex_music': ('музыка', 'музыку'),
+    'download_photo': ('фото', 'фотки', 'фотографии'),
     'telegram': ('telegram', 'телеграм', 'телегу'),
     'end_the_program': ('выключайся', 'выключая', 'выключись')
 }
@@ -62,7 +65,7 @@ def search_video_on_youtube(find):
 
 def listen_yandex_music(smthn):
     """Функуия запуска Яндекс музыки"""
-    webbrowser.open_new('your_path')
+    webbrowser.open_new('your path')
     sleep(2)
     # Ищем иконку ЯМ на главной странице
     a = root.locateCenterOnScreen('YM.png', confidence=0.9)
@@ -75,9 +78,31 @@ def listen_yandex_music(smthn):
     root.click()
 
 
+def download_photo(smthn):
+    name = root.prompt(text='Напишите какое фото вы хотите получить', title='Step 1', default='London')
+    num = root.prompt(text='Напишите какое кол-во фотографий вам нужно', title='Step 2')
+
+    # Удаляем папку img, тк при поиске новых фото могут остаться старые фото
+    try:
+        shutil.rmtree(f'{os.getcwd()}/img')
+    except FileNotFoundError:
+        root.alert(text='Папка img не найдена, удаление невозможно', title='Error', button='OK')
+
+    # Создаём эту папку заново
+    os.mkdir('img')
+
+    crawler = GoogleImageCrawler(storage={'root_dir': './img'})
+    try:
+        # Скачиваем фотографии
+        crawler.crawl(keyword=name, max_num=int(num), overwrite=True)
+        root.alert(text='Фото скачаны и находятся в папке img', title='Photo', button='OK')
+    except Exception:
+        root.alert(text='Вы ввели что-то некорректо', title='Error', button='OK')
+
+
 def telegram(smthn):
     """Функцция запускает телеграм"""
-    os.startfile('your_path')
+    os.startfile('your path')
 
 
 def end_the_program(smthn):
